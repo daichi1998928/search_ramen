@@ -22,6 +22,20 @@ class LinebotController < ApplicationController
         events = client.parse_events_from(body)
 
         events.each { |event|
+
+        if event.message['text'] != nil
+            address = event.message['text']
+            key_id = ENV['ACCESS_KEY']
+            #URLの文字列をURIオブジェクトへと生成いたします
+            area_result = URI.parse("https://api.gnavi.co.jp/RestSearchAPI/v3/?keyid=#{key_id}&address=#{URI.encode(address)}&freeword=#{URI.encode('ラーメン')}")
+            #上の処理で返ってきたURIオブジェクトを元にAPIを叩いてくれる
+            json_result = Net::HTTP.get(area_result)
+            #レスポンスが文字列形式のJSONで返ってくる。下記の処理でハッシュオブジェクトに変換している
+            hash_result = JSON.parse json_result
+        end
+
+
+
         case event
         when Line::Bot::Event::Message
             case event.type
