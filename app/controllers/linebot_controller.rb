@@ -32,6 +32,14 @@ class LinebotController < ApplicationController
             json_result = Net::HTTP.get(area_result)
             #レスポンスが文字列形式のJSONで返ってくる。下記の処理でハッシュオブジェクトに変換している
             hash_result = JSON.parse json_result
+        else
+            latitude = event.message['latitude']
+            longitude = event.message['longitude']
+    
+            key_id = ENV['ACCESS_KEY']
+            area_result = URI.parse("https://api.gnavi.co.jp/RestSearchAPI/v3/?keyid=#{key_id}&latitude=#{latitude}&longitude=#{longitude}&freeword=#{URI.encode('ラーメン')}")
+            json_result = Net::HTTP.get(area_result)
+            hash_result = JSON.parse json_result
         end
 
         ramen_shop_info = hash_result["rest"]
@@ -43,7 +51,7 @@ class LinebotController < ApplicationController
         case event
         when Line::Bot::Event::Message
             case event.type
-            when Line::Bot::Event::MessageType::Text
+            when Line::Bot::Event::MessageType::Text,Line::Bot::Event::MessageType::Location
             
             client.reply_message(event['replyToken'], flex_response)
             end
@@ -71,8 +79,9 @@ class LinebotController < ApplicationController
             open_time = ""
         end
         if holiday.class != String
-        holiday = ""
+            holiday = ""
         end
+
         {
             "type": "flex",
             "altText": "this is a flex message",
