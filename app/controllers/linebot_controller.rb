@@ -61,13 +61,14 @@ class LinebotController < ApplicationController
            ramen_shops_shuffle = ramen_shop_info.shuffle
            ramen_shop = ramen_shops_shuffle.sample
            flex_response = reply(ramen_shop)
+           map_response = shop_address(ramen_shop)
         end
         case event
         when Line::Bot::Event::Message
             case event.type
             when Line::Bot::Event::MessageType::Text,Line::Bot::Event::MessageType::Location
             
-            client.reply_message(event['replyToken'], flex_response)
+            client.reply_message(event['replyToken'], [flex_response,map_response])
             end
         end
         }
@@ -219,6 +220,19 @@ class LinebotController < ApplicationController
           }
     end
 
+    def shop_address(ramen_shop)
+      shop_name = ramen_shop["name"]
+      address = ramen_shop["address"]
+      latitude = ramen_shop["latitude"]
+      longitude = ramen_shop["longitude"]
+      {
+        "type": "location",
+        "title": shop_name,
+        "address": address ,
+        "latitude": latitude,
+        "longitude": longitude
+      }
+     end
 
 
 end
