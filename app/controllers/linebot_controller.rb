@@ -42,12 +42,26 @@ class LinebotController < ApplicationController
             hash_result = JSON.parse json_result
         end
 
-        ramen_shop_info = hash_result["rest"]
-        ramen_shops_shuffle = ramen_shop_info.shuffle
-        ramen_shop = ramen_shops_shuffle.sample
-        flex_response = reply(ramen_shop)
+        if hash_result.has_key?("error")
+          response = "送信していただいたエリアの付近でラーメン店をぐるなびから探すことはできませんでした。申し訳ございませんが他のツールをお使いください"
+          case event
+          when Line::Bot::Event::Message
+            case event.type
+            when Line::Bot::Event::MessageType::Text,Line::Bot::Event::MessageType::Location
+              message = {
+              type: 'text',
+              text: response
+            }
+               client.reply_message(event['replyToken'], [message])
+            end
+          end
+        end
 
-
+        if ramen_shop_info = hash_result["rest"]
+           ramen_shops_shuffle = ramen_shop_info.shuffle
+           ramen_shop = ramen_shops_shuffle.sample
+           flex_response = reply(ramen_shop)
+        end
         case event
         when Line::Bot::Event::Message
             case event.type
@@ -57,8 +71,7 @@ class LinebotController < ApplicationController
             end
         end
         }
-
-        head :ok
+         head :ok
     end
 
 
